@@ -118,7 +118,7 @@ contract UniPerkHook is BaseHook {
     /// @notice Called before a swap - validates agent and applies fee discount
     function _beforeSwap(
         address sender,
-        PoolKey calldata,
+        PoolKey calldata key,
         SwapParams calldata params,
         bytes calldata hookData
     ) internal override returns (bytes4, BeforeSwapDelta, uint24) {
@@ -141,13 +141,25 @@ contract UniPerkHook is BaseHook {
         
         // Get fee discount based on user tier
         address trader = isAgentTrade ? user : sender;
-        uint24 feeDiscount = tierFeeDiscount[userTier[trader]];
+        uint24 discountBps = tierFeeDiscount[userTier[trader]];
         
-        // Return with fee override (discount applied)
+        // Calculate the actual fee override
+        // Pool's base fee is in key.fee (e.g., 3000 = 0.3%)
+        // discountBps is the discount (e.g., 100 = 1% discount = 0.01%)
+        // Final fee = baseFee - (baseFee * discountBps / 10000)
+        uint24 baseFee = key.fee;
+        uint24 feeOverride = baseFee;
+        
+        if (discountBps > 0 && baseFee > 0) {
+            uint24 discountAmount = uint24((uint256(baseFee) * discountBps) / 10000);
+            feeOverride = baseFee - discountAmount;
+        }
+        
+        // Return with fee override (the actual fee to charge)
         return (
             BaseHook.beforeSwap.selector,
             BeforeSwapDeltaLibrary.ZERO_DELTA,
-            feeDiscount
+            feeOverride
         );
     }
     
