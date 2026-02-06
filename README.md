@@ -27,16 +27,24 @@ UniPerk combines three protocols to create the first complete infrastructure for
 
 | Contract | Address | Description |
 |----------|---------|-------------|
-| **AgentRegistry** | [`0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF`](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF) | ENS hybrid identity system |
-| **UniPerkHook** | [`0xBDF94f0b5252DC338F2bd0005404584024a200c0`](https://basescan.org/address/0xBDF94f0b5252DC338F2bd0005404584024a200c0) | V4 hook with tier fees |
+| **AgentRegistry** | [`0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF`](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF) | On-chain agent registry with trade limits |
+| **UniPerkHook** | [`0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0`](https://basescan.org/address/0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0) | V4 hook with tier-based fee discounts |
+
+### Live Pool
+
+| Pool | Fee | Hook |
+|------|-----|------|
+| WETH/USDC | 0.30% | UniPerkHook (tier discounts enabled) |
 
 ### External Contracts (Base Mainnet)
 
 | Contract | Address |
 |----------|---------|
-| PoolManager (V4) | `0x498581ff718922c3f8e6a244956af099b2652b2b` |
-| Nitrolite Custody | `0x490fb189DdE3a01B00be9BA5F41e3447FbC838b6` |
-| USDC | `0x833589fCD6eDb6E08f4c7c32D4f71b54bdA02913` |
+| PoolManager (V4) | `0x498581fF718922c3f8e6A244956aF099B2652b2b` |
+| PositionManager (V4) | `0x7C5f5A4bBd8fD63184577525326123B519429bDc` |
+| Permit2 | `0x000000000022D473030F116dDEE9F6B43aC78BA3` |
+| WETH | `0x4200000000000000000000000000000000000006` |
+| USDC | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` |
 
 ## Architecture
 
@@ -153,15 +161,22 @@ UniPerk/
 │   ├── components/
 │   └── package.json
 │
-├── contracts/              # Solidity smart contracts (Hardhat)
+├── contracts/              # AgentRegistry (Hardhat)
 │   ├── contracts/
 │   │   ├── AgentRegistry.sol
+│   │   └── interfaces/
+│   └── hardhat.config.js
+│
+├── contracts-v4/           # UniPerkHook (Foundry)
+│   ├── src/
 │   │   ├── UniPerkHook.sol
 │   │   └── interfaces/
-│   ├── scripts/
-│   │   └── deploy.js
-│   ├── test/
-│   └── hardhat.config.js
+│   ├── script/
+│   │   ├── 00_DeployUniPerkHook.s.sol
+│   │   ├── UniPerk_CreatePool.s.sol
+│   │   └── UniPerk_AddLiquidity.s.sol
+│   ├── lib/                # Foundry dependencies
+│   └── foundry.toml
 │
 ├── agent/                  # OpenClaw agent config
 │   ├── openclaw.json
@@ -175,7 +190,9 @@ UniPerk/
 | Component | Technology |
 |-----------|------------|
 | Frontend | Next.js 14, wagmi, viem |
-| Contracts | Solidity 0.8.24, Hardhat |
+| AgentRegistry | Solidity 0.8.24, Hardhat |
+| UniPerkHook | Solidity 0.8.26, Foundry |
+| V4 Integration | @openzeppelin/uniswap-hooks, HookMiner |
 | ENS | @ensdomains/ensjs, NameStone |
 | Yellow | @erc7824/nitrolite v0.5.3 |
 | Uniswap | v4-core, v4-periphery |
@@ -188,6 +205,7 @@ UniPerk/
 
 - Node.js 18+
 - Git
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
 
 ### Installation
 
@@ -196,9 +214,13 @@ UniPerk/
 git clone https://github.com/PerkOS-xyz/UniPerk.git
 cd UniPerk
 
-# Install contract dependencies
+# Install AgentRegistry dependencies (Hardhat)
 cd contracts
 npm install
+
+# Install UniPerkHook dependencies (Foundry)
+cd ../contracts-v4
+forge install
 
 # Install frontend dependencies
 cd ../app
@@ -208,15 +230,31 @@ npm install
 ### Build & Test
 
 ```bash
-# Build contracts
+# Build AgentRegistry (Hardhat)
 cd contracts
-npm run compile
+npx hardhat compile
 
-# Run tests
-npm run test
+# Build UniPerkHook (Foundry)
+cd ../contracts-v4
+forge build
 
-# Deploy to Base
-npm run deploy:base
+# Run Foundry tests
+forge test
+```
+
+### Deploy to Base Mainnet
+
+```bash
+cd contracts-v4
+
+# Deploy UniPerkHook (uses HookMiner for correct address)
+forge script script/00_DeployUniPerkHook.s.sol --rpc-url base --broadcast
+
+# Create pool
+forge script script/UniPerk_CreatePool.s.sol --rpc-url base --broadcast
+
+# Add liquidity
+forge script script/UniPerk_AddLiquidity.s.sol --rpc-url base --broadcast
 ```
 
 ## Why This Matters
