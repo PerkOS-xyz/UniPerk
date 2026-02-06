@@ -8,7 +8,12 @@
     "coverage": "hardhat coverage",
     "deploy:base": "hardhat run scripts/deploy.js --network base",
     "deploy:sepolia": "hardhat run scripts/deploy.js --network baseSepolia",
-    "verify": "hardhat verify --network base"
+    "verify": "hardhat verify --network base",
+    "mine-address": "node scripts/1-mine-address.js",
+    "deploy:create2": "hardhat run scripts/2-deploy-with-create2.js --network base",
+    "create-pool": "hardhat run scripts/3-create-pool.js --network base",
+    "add-liquidity": "hardhat run scripts/4-add-liquidity.js --network base",
+    "setup:full": "npm run mine-address && npm run deploy:create2 && npm run create-pool && npm run add-liquidity"
   },
   "keywords": [
     "uniswap",
