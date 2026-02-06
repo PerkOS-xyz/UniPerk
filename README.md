@@ -269,153 +269,52 @@ forge script script/UniPerk_CreatePool.s.sol --rpc-url base --broadcast
 forge script script/UniPerk_AddLiquidity.s.sol --rpc-url base --broadcast
 ```
 
-## Real Implementation Details
+## How It Works
 
-> **This is a production deployment on Base Mainnet** — not a mock or simulation. All contracts are verified and functional.
+### Hook Fee Logic
 
-### Why This Is Real (Not Hardcoded)
-
-| Aspect | Implementation | Proof |
-|--------|---------------|-------|
-| **Hook Address** | Mined via HookMiner with CREATE2 | Address bits encode `beforeSwap + afterSwap` permissions |
-| **Pool Creation** | Called `PoolManager.initialize()` on mainnet | [View tx on BaseScan](https://basescan.org/address/0x498581fF718922c3f8e6A244956aF099B2652b2b) |
-| **Liquidity** | Real WETH + USDC deposited | Tokens locked in PoolManager |
-| **Fee Logic** | Dynamic calculation in `_beforeSwap` | `feeOverride = baseFee - (baseFee * discount / 10000)` |
-
-### UniPerkHook.sol — Core Logic
-
-The hook validates agents and applies tier-based fee discounts:
+The hook calculates fee discounts dynamically based on user tier:
 
 ```solidity
-/// @notice Called before a swap - validates agent and applies fee discount
 function _beforeSwap(
     address sender,
     PoolKey calldata key,
     SwapParams calldata params,
     bytes calldata hookData
 ) internal override returns (bytes4, BeforeSwapDelta, uint24) {
-    // Decode hookData to get agent info
+    // Validate agent permissions
     (address agent, address user) = _decodeHookData(hookData);
-    
-    // Validate agent if present
     if (agent != address(0)) {
         (bool valid, ) = agentRegistry.validateTrade(agent, tradeSize);
         require(valid, "Agent validation failed");
     }
     
-    // Calculate fee override (NOT hardcoded!)
-    // baseFee comes from the pool's key.fee
-    // discountBps comes from the user's tier
+    // Apply tier discount to pool fee
     uint24 baseFee = key.fee;
     uint24 discountBps = tierFeeDiscount[userTier[trader]];
     uint24 feeOverride = baseFee - uint24((uint256(baseFee) * discountBps) / 10000);
     
     return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, feeOverride);
 }
-
-/// @notice Called after a swap - updates trade stats and tier
-function _afterSwap(...) internal override returns (bytes4, int128) {
-    // Update stats (real state changes on-chain)
-    tradeCount[trader]++;
-    tradeVolume[trader] += tradeValue;
-    
-    // Check for tier upgrade
-    _updateTier(trader);
-    
-    return (BaseHook.afterSwap.selector, 0);
-}
 ```
 
-### Pool Creation Process
+### Deployment Flow
 
 ```mermaid
 sequenceDiagram
     participant Dev as Developer
     participant HM as HookMiner
-    participant C2 as CREATE2 Deployer
     participant PM as PoolManager
     participant Hook as UniPerkHook
 
-    Note over Dev,Hook: Step 1: Deploy Hook with Valid Address
-    Dev->>HM: Find salt for flags (beforeSwap | afterSwap)
-    HM->>HM: Iterate salts until address bits match
-    HM-->>Dev: salt = 0x6692, address = 0x825F...40C0
-    Dev->>C2: Deploy with salt
-    C2->>Hook: CREATE2 deploy
-    Hook-->>Dev: Hook deployed ✅
-
-    Note over Dev,Hook: Step 2: Initialize Pool
-    Dev->>PM: initialize(poolKey, sqrtPriceX96)
-    PM->>PM: Validate hook address bits
-    PM->>Hook: Call hook callbacks
-    PM-->>Dev: Pool created ✅
-
-    Note over Dev,Hook: Step 3: Add Liquidity
-    Dev->>PM: modifyLiquidity(poolKey, params)
-    PM->>Hook: beforeAddLiquidity (if enabled)
-    PM->>PM: Update pool state
-    PM-->>Dev: Position minted ✅
+    Dev->>HM: Find CREATE2 salt for hook flags
+    HM-->>Dev: salt + predicted address
+    Dev->>Hook: Deploy via CREATE2
+    Dev->>PM: initialize(poolKey, sqrtPrice)
+    PM->>Hook: Validate address bits
+    PM-->>Dev: Pool ready
+    Dev->>PM: Add liquidity
 ```
-
-### Deployment Scripts Explained
-
-**1. `00_DeployUniPerkHook.s.sol`** — Mines address + deploys hook
-```solidity
-// Mine a salt that produces valid hook address
-(address hookAddress, bytes32 salt) = HookMiner.find(
-    CREATE2_DEPLOYER,
-    uint160(Hooks.BEFORE_SWAP_FLAG | Hooks.AFTER_SWAP_FLAG),
-    type(UniPerkHook).creationCode,
-    abi.encode(POOL_MANAGER, AGENT_REGISTRY)
-);
-
-// Deploy with mined salt
-UniPerkHook hook = new UniPerkHook{salt: salt}(poolManager, agentRegistry);
-```
-
-**2. `UniPerk_CreatePool.s.sol`** — Initializes the pool
-```solidity
-PoolKey memory poolKey = PoolKey({
-    currency0: Currency.wrap(WETH),    // 0x4200...0006
-    currency1: Currency.wrap(USDC),    // 0x8335...2913
-    fee: 3000,                          // 0.30%
-    tickSpacing: 60,
-    hooks: IHooks(UNIPERK_HOOK)        // 0x825F...40C0
-});
-
-// Initialize at 1 WETH = 2500 USDC
-POOL_MANAGER.initialize(poolKey, STARTING_SQRT_PRICE);
-```
-
-**3. `UniPerk_AddLiquidity.s.sol`** — Provides liquidity
-```solidity
-// Approve tokens via Permit2
-PERMIT2.approve(WETH, POSITION_MANAGER, type(uint160).max, type(uint48).max);
-PERMIT2.approve(USDC, POSITION_MANAGER, type(uint160).max, type(uint48).max);
-
-// Mint liquidity position
-POSITION_MANAGER.modifyLiquidities(
-    abi.encode(actions, params),
-    deadline
-);
-```
-
-### Verify On-Chain
-
-All contracts are verified on BaseScan:
-
-| Contract | Verification |
-|----------|--------------|
-| AgentRegistry | [View Code](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF#code) |
-| UniPerkHook | [View Code](https://basescan.org/address/0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0#code) |
-
-### Transaction History
-
-| Action | Transaction |
-|--------|-------------|
-| Deploy UniPerkHook | Check BaseScan for contract creation tx |
-| Initialize Pool | `PoolManager.initialize()` call |
-| Add Liquidity | `PositionManager.modifyLiquidities()` call |
 
 ---
 
