@@ -23,6 +23,21 @@ UniPerk combines three protocols to create the first complete infrastructure for
 | **Yellow Network** | State Channels | 100 trades, 1 settlement (99% gas savings) |
 | **Uniswap V4** | Identity-Aware Hooks | Better reputation = better rates |
 
+## Deployed Contracts (Base Mainnet)
+
+| Contract | Address | Description |
+|----------|---------|-------------|
+| **AgentRegistry** | [`0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF`](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF) | ENS hybrid identity system |
+| **UniPerkHook** | [`0xdA6e25795b31D262b5ed26ef7C766a7f01ae2652`](https://basescan.org/address/0xdA6e25795b31D262b5ed26ef7C766a7f01ae2652) | V4 hook with tier fees |
+
+### External Contracts (Base Mainnet)
+
+| Contract | Address |
+|----------|---------|
+| PoolManager (V4) | `0x498581ff718922c3f8e6a244956af099b2652b2b` |
+| Nitrolite Custody | `0x490fb189DdE3a01B00be9BA5F41e3447FbC838b6` |
+| USDC | `0x833589fCD6eDb6E08f4c7c32D4f71b54bdA02913` |
+
 ## Architecture
 
 ```mermaid
@@ -100,6 +115,35 @@ Agents build reputation through successful trades, unlocking progressive fee dis
 | 🥇 Gold | 50-199 | 25% |
 | 💎 Platinum | 200+ | 50% |
 
+## Smart Contracts
+
+### AgentRegistry.sol
+
+ENS hybrid identity system with on-chain fallback. Manages agent permissions and trade limits.
+
+```solidity
+function registerAgent(address agent, uint256 limit, string ensName)
+function validateTrade(address agent, uint256 size) → bool
+function revokeAgent(address agent)
+```
+
+### UniPerkHook.sol
+
+Uniswap V4 hook implementing identity-aware fee discounts based on trader reputation.
+
+```solidity
+function _beforeSwap() → validates agent, applies tier discount
+function _afterSwap() → updates trade count, promotes tier
+```
+
+#### V4 Hook Address Requirements
+
+Uniswap V4 uses **address-encoded permissions** where the hook's address must contain specific bits corresponding to its enabled callbacks. For production deployment:
+
+1. Use `CREATE2` with a mined salt via [HookMiner](https://github.com/uniswap/v4-periphery)
+2. The address bits must match `getHookPermissions()` return value
+3. This demo overrides `validateHookAddress()` for rapid iteration
+
 ## Project Structure
 
 ```
@@ -111,8 +155,9 @@ UniPerk/
 │
 ├── contracts/              # Solidity smart contracts (Hardhat)
 │   ├── contracts/
-│   │   ├── AgentRegistry.sol    # ENS hybrid identity
-│   │   └── UniPerkHook.sol      # V4 hook with tier fees
+│   │   ├── AgentRegistry.sol
+│   │   ├── UniPerkHook.sol
+│   │   └── interfaces/
 │   ├── scripts/
 │   │   └── deploy.js
 │   ├── test/
@@ -120,27 +165,9 @@ UniPerk/
 │
 ├── agent/                  # OpenClaw agent config
 │   ├── openclaw.json
-│   └── skills/             # Yellow SDK, ENS reader
+│   └── skills/
 │
 └── scripts/                # Setup and deployment
-```
-
-## Smart Contracts
-
-### AgentRegistry.sol
-ENS hybrid identity system with on-chain fallback.
-
-```solidity
-function registerAgent(address agent, uint256 limit, string ensName)
-function validateTrade(address agent, uint256 size) → bool
-```
-
-### UniPerkHook.sol
-Uniswap V4 hook with identity-aware fee discounts.
-
-```solidity
-function beforeSwap() → validates agent, applies tier discount
-function afterSwap() → updates trade count, promotes tier
 ```
 
 ## Tech Stack
@@ -154,20 +181,6 @@ function afterSwap() → updates trade count, promotes tier
 | Uniswap | v4-core, v4-periphery |
 | Agent | OpenClaw |
 | Payments | x402 via stack.perkos.xyz |
-
-## Network
-
-**Base Mainnet** (Chain ID: 8453)
-
-### Contract Addresses
-
-| Contract | Address |
-|----------|---------|
-| PoolManager (V4) | `0x498581ff718922c3f8e6a244956af099b2652b2b` |
-| PositionManager (V4) | `0x7c5f5a4bbd8fd63184577525326123b519429bdc` |
-| Nitrolite Custody | `0x490fb189DdE3a01B00be9BA5F41e3447FbC838b6` |
-| Nitrolite Adjudicator | `0x7de4A0736Cf5740fD3Ca2F2e9cc85c9AC223eF0C` |
-| USDC | `0x833589fCD6eDb6E08f4c7c32D4f71b54bdA02913` |
 
 ## Getting Started
 
