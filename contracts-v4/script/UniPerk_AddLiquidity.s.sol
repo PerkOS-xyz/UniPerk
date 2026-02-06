@@ -28,24 +28,24 @@ contract UniPerkAddLiquidityScript is Script {
     address constant WETH = 0x4200000000000000000000000000000000000006;
     address constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     
-    // UniPerk Hook - UPDATE AFTER DEPLOY
-    address constant UNIPERK_HOOK = 0x0000000000000000000000000000000000000000;
+    // UniPerk Hook - DEPLOYED
+    address constant UNIPERK_HOOK = 0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0;
     
     // Pool config
     uint24 constant LP_FEE = 3000;
     int24 constant TICK_SPACING = 60;
     uint160 constant STARTING_PRICE = 3961408125713216879677197516800;
     
-    // Liquidity amounts
-    uint256 constant WETH_AMOUNT = 0.1 ether;
-    uint256 constant USDC_AMOUNT = 250e6;
+    // Liquidity amounts (ultra minimum for demo)
+    uint256 constant WETH_AMOUNT = 0.001 ether;
+    uint256 constant USDC_AMOUNT = 2500000; // 2.5 USDC (6 decimals)
 
     function run() external {
         require(UNIPERK_HOOK != address(0), "Set UNIPERK_HOOK address first");
         
-        // USDC < WETH on Base, so USDC is currency0
-        Currency currency0 = Currency.wrap(USDC);
-        Currency currency1 = Currency.wrap(WETH);
+        // WETH (0x42..) < USDC (0x83..) so WETH is currency0
+        Currency currency0 = Currency.wrap(WETH);
+        Currency currency1 = Currency.wrap(USDC);
         
         PoolKey memory poolKey = PoolKey({
             currency0: currency0,
@@ -63,8 +63,8 @@ contract UniPerkAddLiquidityScript is Script {
             STARTING_PRICE,
             TickMath.getSqrtPriceAtTick(tickLower),
             TickMath.getSqrtPriceAtTick(tickUpper),
-            USDC_AMOUNT,
-            WETH_AMOUNT
+            WETH_AMOUNT,
+            USDC_AMOUNT
         );
         
         console.log("Adding liquidity to UniPerk pool");
@@ -93,7 +93,7 @@ contract UniPerkAddLiquidityScript is Script {
         // Mint
         bytes memory actions = abi.encodePacked(uint8(Actions.MINT_POSITION), uint8(Actions.SETTLE_PAIR));
         bytes[] memory params = new bytes[](2);
-        params[0] = abi.encode(poolKey, tickLower, tickUpper, liquidity, USDC_AMOUNT + 1, WETH_AMOUNT + 1, msg.sender, "");
+        params[0] = abi.encode(poolKey, tickLower, tickUpper, liquidity, WETH_AMOUNT + 1, USDC_AMOUNT + 1, msg.sender, "");
         params[1] = abi.encode(currency0, currency1);
         
         POSITION_MANAGER.modifyLiquidities(abi.encode(actions, params), block.timestamp + 3600);

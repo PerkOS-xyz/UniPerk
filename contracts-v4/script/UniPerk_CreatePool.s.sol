@@ -24,8 +24,8 @@ contract UniPerkCreatePoolScript is Script {
     address constant WETH = 0x4200000000000000000000000000000000000006;
     address constant USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
     
-    // UniPerk Hook - UPDATE THIS AFTER DEPLOY
-    address constant UNIPERK_HOOK = 0x0000000000000000000000000000000000000000; // TODO: Set after mining
+    // UniPerk Hook - DEPLOYED
+    address constant UNIPERK_HOOK = 0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0;
     
     // ============ Pool Configuration ============
     
