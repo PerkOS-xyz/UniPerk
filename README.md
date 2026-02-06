@@ -25,10 +25,15 @@ UniPerk combines three protocols to create the first complete infrastructure for
 
 ## Deployed Contracts (Base Mainnet)
 
-| Contract | Address | Description |
-|----------|---------|-------------|
-| **AgentRegistry** | [`0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF`](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF) | On-chain agent registry with trade limits |
-| **UniPerkHook** | [`0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0`](https://basescan.org/address/0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0) | V4 hook with tier-based fee discounts |
+Both contracts are **verified** ✅ on BaseScan — click to view source code:
+
+| Contract | Address | Verified |
+|----------|---------|----------|
+| **AgentRegistry** | [`0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF`](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF#code) | ✅ [View Code](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF#code) |
+| **UniPerkHook** | [`0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0`](https://basescan.org/address/0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0#code) | ✅ [View Code](https://basescan.org/address/0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0#code) |
+
+> 💡 **AgentRegistry**: On-chain agent permissions with trade limits  
+> 💡 **UniPerkHook**: Uniswap V4 hook with tier-based fee discounts
 
 ### Live Pool
 
