@@ -43,7 +43,8 @@ function computeCreate2Address(deployer, salt, initCodeHash) {
 function hasCorrectFlags(address, requiredFlags) {
   const addressNum = BigInt(address);
   const flags = Number(addressNum & BigInt(FLAG_MASK));
-  return (flags & requiredFlags) === requiredFlags;
+  // Flags must EXACTLY match, not just include required bits
+  return flags === requiredFlags;
 }
 
 async function main() {
