@@ -28,7 +28,7 @@ UniPerk combines three protocols to create the first complete infrastructure for
 | Contract | Address | Description |
 |----------|---------|-------------|
 | **AgentRegistry** | [`0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF`](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF) | ENS hybrid identity system |
-| **UniPerkHook** | [`0xdA6e25795b31D262b5ed26ef7C766a7f01ae2652`](https://basescan.org/address/0xdA6e25795b31D262b5ed26ef7C766a7f01ae2652) | V4 hook with tier fees |
+| **UniPerkHook** | [`0xBDF94f0b5252DC338F2bd0005404584024a200c0`](https://basescan.org/address/0xBDF94f0b5252DC338F2bd0005404584024a200c0) | V4 hook with tier fees |
 
 ### External Contracts (Base Mainnet)
 
