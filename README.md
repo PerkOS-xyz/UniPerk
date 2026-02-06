@@ -161,16 +161,11 @@ UniPerk/
 │   ├── components/
 │   └── package.json
 │
-├── contracts/              # AgentRegistry (Hardhat)
-│   ├── contracts/
-│   │   ├── AgentRegistry.sol
-│   │   └── interfaces/
-│   └── hardhat.config.js
-│
-├── contracts-v4/           # UniPerkHook (Foundry)
+├── contracts-v4/           # Smart Contracts (Foundry)
 │   ├── src/
 │   │   ├── UniPerkHook.sol
 │   │   └── interfaces/
+│   │       └── IAgentRegistry.sol
 │   ├── script/
 │   │   ├── 00_DeployUniPerkHook.s.sol
 │   │   ├── UniPerk_CreatePool.s.sol
@@ -182,7 +177,7 @@ UniPerk/
 │   ├── openclaw.json
 │   └── skills/
 │
-└── scripts/                # Setup and deployment
+└── docs/                   # Documentation
 ```
 
 ## Tech Stack
@@ -190,8 +185,7 @@ UniPerk/
 | Component | Technology |
 |-----------|------------|
 | Frontend | Next.js 14, wagmi, viem |
-| AgentRegistry | Solidity 0.8.24, Hardhat |
-| UniPerkHook | Solidity 0.8.26, Foundry |
+| Smart Contracts | Solidity 0.8.26, Foundry |
 | V4 Integration | @openzeppelin/uniswap-hooks, HookMiner |
 | ENS | @ensdomains/ensjs, NameStone |
 | Yellow | @erc7824/nitrolite v0.5.3 |
@@ -214,12 +208,8 @@ UniPerk/
 git clone https://github.com/PerkOS-xyz/UniPerk.git
 cd UniPerk
 
-# Install AgentRegistry dependencies (Hardhat)
-cd contracts
-npm install
-
-# Install UniPerkHook dependencies (Foundry)
-cd ../contracts-v4
+# Install smart contract dependencies
+cd contracts-v4
 forge install
 
 # Install frontend dependencies
@@ -230,15 +220,12 @@ npm install
 ### Build & Test
 
 ```bash
-# Build AgentRegistry (Hardhat)
-cd contracts
-npx hardhat compile
+cd contracts-v4
 
-# Build UniPerkHook (Foundry)
-cd ../contracts-v4
+# Build contracts
 forge build
 
-# Run Foundry tests
+# Run tests
 forge test
 ```
 
