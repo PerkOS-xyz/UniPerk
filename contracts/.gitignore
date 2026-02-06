@@ -1,9 +1,18 @@
-node_modules
-cache
-artifacts
-typechain-types
-coverage
-coverage.json
+# Compiler files
+cache/
+out/
+
+# Ignores development (and goerli) broadcast logs
+!/broadcast
+/broadcast/*/31337/
+/broadcast/*/5/
+/broadcast/**/dry-run/
+
+# Docs
+docs/
+
+# Dotenv file
 .env
-mined-address.json
-pool-info.json
+
+# Node modules
+node_modules/
