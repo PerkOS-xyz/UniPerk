@@ -109,14 +109,14 @@ UniPerk/
 │   ├── components/
 │   └── package.json
 │
-├── contracts/              # Solidity smart contracts
-│   ├── src/
+├── contracts/              # Solidity smart contracts (Hardhat)
+│   ├── contracts/
 │   │   ├── AgentRegistry.sol    # ENS hybrid identity
 │   │   └── UniPerkHook.sol      # V4 hook with tier fees
-│   ├── script/
-│   │   └── Deploy.s.sol
+│   ├── scripts/
+│   │   └── deploy.js
 │   ├── test/
-│   └── foundry.toml
+│   └── hardhat.config.js
 │
 ├── agent/                  # OpenClaw agent config
 │   ├── openclaw.json
@@ -148,7 +148,7 @@ function afterSwap() → updates trade count, promotes tier
 | Component | Technology |
 |-----------|------------|
 | Frontend | Next.js 14, wagmi, viem |
-| Contracts | Solidity 0.8.24, Foundry |
+| Contracts | Solidity 0.8.24, Hardhat |
 | ENS | @ensdomains/ensjs, NameStone |
 | Yellow | @erc7824/nitrolite v0.5.3 |
 | Uniswap | v4-core, v4-periphery |
@@ -174,7 +174,6 @@ function afterSwap() → updates trade count, promotes tier
 ### Prerequisites
 
 - Node.js 18+
-- Foundry
 - Git
 
 ### Installation
@@ -186,7 +185,7 @@ cd UniPerk
 
 # Install contract dependencies
 cd contracts
-forge install
+npm install
 
 # Install frontend dependencies
 cd ../app
@@ -198,24 +197,14 @@ npm install
 ```bash
 # Build contracts
 cd contracts
-forge build
+npm run compile
 
 # Run tests
-forge test
+npm run test
 
 # Deploy to Base
-forge script script/Deploy.s.sol --rpc-url base --broadcast
+npm run deploy:base
 ```
-
-## Bounties
-
-| Protocol | Prize | Track |
-|----------|-------|-------|
-| Uniswap V4 | $2,500 | Agentic Finance |
-| ENS | $1,500 | Most Creative DeFi |
-| Yellow Network | $5,000 | Trading Apps |
-
-**Total Potential: $9,000**
 
 ## Why This Matters
 
