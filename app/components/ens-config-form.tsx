@@ -66,6 +66,7 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
     slippage: '50',
     expires: '',
   })
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isSuccess) {
@@ -73,10 +74,36 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
     }
   }, [isSuccess])
 
+  const validate = (): string | null => {
+    const maxTrade = Number(formData.maxTrade)
+    if (!maxTrade || maxTrade <= 0) return 'Max trade size must be greater than 0'
+    if (maxTrade > 1_000_000) return 'Max trade size cannot exceed 1,000,000 USDC'
+
+    const slippage = Number(formData.slippage)
+    if (isNaN(slippage) || slippage < 1) return 'Slippage must be at least 1 basis point'
+    if (slippage > 1000) return 'Slippage cannot exceed 1000 basis points (10%)'
+
+    const tokens = formData.tokens.split(',').map(t => t.trim()).filter(Boolean)
+    if (tokens.length === 0) return 'At least one token must be specified'
+
+    if (formData.expires) {
+      const expiresDate = new Date(formData.expires)
+      if (expiresDate <= new Date()) return 'Expiry date must be in the future'
+    }
+
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!ensName || !resolverAddress) return
 
+    const error = validate()
+    if (error) {
+      setValidationError(error)
+      return
+    }
+    setValidationError(null)
     reset()
 
     const node = namehash(ensName)
@@ -247,6 +274,12 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
           </div>
 
           {/* Status messages */}
+          {validationError && (
+            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+              {validationError}
+            </div>
+          )}
+
           {writeError && (
             <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
               Transaction failed: {writeError.message.split('\n')[0]}

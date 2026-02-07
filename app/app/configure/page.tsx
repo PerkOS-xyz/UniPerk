@@ -49,9 +49,8 @@ export default function ConfigurePage() {
           Set up ENS text records to control what AI agents can do on your behalf.
         </p>
         
-        <ENSConfigForm 
-          onSubmit={(data) => {
-            console.log('Form submitted:', data)
+        <ENSConfigForm
+          onSubmit={() => {
             router.push('/dashboard')
           }}
         />
