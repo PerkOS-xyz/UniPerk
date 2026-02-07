@@ -5,12 +5,16 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { WalletConnect } from '@/components/wallet-connect'
+import { TierBadge } from '@/components/tier-badge'
+import { PermissionCard } from '@/components/permission-card'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { useUserTier } from '@/hooks/useUserTier'
 
 export default function Dashboard() {
   const { address, isConnected } = useAccount()
   const router = useRouter()
+  const { tradeCount, tradeVolume, tradesUntilNextTier, isLoading } = useUserTier(address)
 
   useEffect(() => {
     if (!isConnected) {
@@ -20,6 +24,11 @@ export default function Dashboard() {
 
   if (!isConnected) {
     return null
+  }
+
+  const formatVolume = (volume: bigint) => {
+    const num = Number(volume) / 1e6
+    return num.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
   }
 
   return (
@@ -34,7 +43,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <Link href="/configure">
               <Button variant="outline" size="sm">
-                Configure Permissions
+                Configure
               </Button>
             </Link>
             <WalletConnect />
@@ -54,13 +63,7 @@ export default function Dashboard() {
               <CardDescription>Based on trading activity</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">🥉</span>
-                <div>
-                  <p className="text-2xl font-bold">BRONZE</p>
-                  <p className="text-sm text-gray-500">0% fee discount</p>
-                </div>
-              </div>
+              <TierBadge address={address} showDetails />
             </CardContent>
           </Card>
 
@@ -68,54 +71,38 @@ export default function Dashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Trade Stats</CardTitle>
-              <CardDescription>Your trading history</CardDescription>
+              <CardDescription>Your activity on UniPerk</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Total Trades</span>
-                  <span className="font-semibold">0</span>
+              {isLoading ? (
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="h-4 bg-gray-200 rounded w-2/3" />
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Volume</span>
-                  <span className="font-semibold">$0.00</span>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Total Trades</span>
+                    <span className="font-semibold">{tradeCount.toString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Volume</span>
+                    <span className="font-semibold">{formatVolume(tradeVolume)}</span>
+                  </div>
+                  {tradesUntilNextTier !== null && tradesUntilNextTier > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Next Tier</span>
+                      <span className="font-semibold">{tradesUntilNextTier} trades</span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Next Tier</span>
-                  <span className="font-semibold">10 trades</span>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
           {/* Permissions Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Agent Permissions</CardTitle>
-              <CardDescription>Your ENS configuration</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Status</span>
-                  <span className="text-green-600 font-medium">Active</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Max Trade</span>
-                  <span className="font-medium">1,000 USDC</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Slippage</span>
-                  <span className="font-medium">0.5%</span>
-                </div>
-              </div>
-              <Link href="/configure" className="block mt-4">
-                <Button variant="outline" size="sm" className="w-full">
-                  Edit Permissions
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <PermissionCard ensName={null} />
 
           {/* Wallet Card */}
           <Card className="md:col-span-2 lg:col-span-3">
@@ -123,15 +110,19 @@ export default function Dashboard() {
               <CardTitle className="text-lg">Connected Wallet</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <code className="bg-gray-100 px-3 py-2 rounded text-sm">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <code className="bg-gray-100 px-3 py-2 rounded text-sm break-all">
                   {address}
                 </code>
-                <div className="flex gap-2">
+                <a 
+                  href={`https://basescan.org/address/${address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <Button variant="outline" size="sm">
-                    View on BaseScan
+                    View on BaseScan ↗
                   </Button>
-                </div>
+                </a>
               </div>
             </CardContent>
           </Card>
