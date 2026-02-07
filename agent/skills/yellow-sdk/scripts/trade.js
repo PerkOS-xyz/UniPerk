@@ -40,19 +40,58 @@ if (!PRIVATE_KEY) {
 }
 
 /**
- * Read ENS permissions for user
- * In production, this would read from ENS text records
+ * Read ENS permissions for user from text records
+ * Uses viem to query ENS text records on mainnet
  */
-async function readENSPermissions(userAddress) {
-  // TODO: Implement actual ENS text record reading
-  // For now, return default permissions
-  return {
-    allowed: true,
-    maxTrade: 1000, // USDC
-    tokens: ['ETH', 'USDC', 'WETH'],
-    slippage: 50, // 0.5%
-    expires: Math.floor(Date.now() / 1000) + 86400 // 24h from now
-  };
+async function readENSPermissions(userAddress, ensName = null) {
+  // If no ENS name provided, use default permissions (for testing)
+  if (!ensName) {
+    console.log('   ⚠️  No ENS name provided, using defaults');
+    return {
+      allowed: true,
+      maxTrade: 1000,
+      tokens: ['ETH', 'USDC', 'WETH'],
+      slippage: 50,
+      expires: Math.floor(Date.now() / 1000) + 86400
+    };
+  }
+
+  try {
+    // Create mainnet client for ENS resolution
+    const mainnetClient = createPublicClient({
+      chain: { id: 1, name: 'Ethereum', network: 'mainnet', nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: ['https://eth.llamarpc.com'] } } },
+      transport: http()
+    });
+
+    // Read ENS text records
+    const textRecords = {
+      allowed: await mainnetClient.getEnsText({ name: ensName, key: 'agent.uniperk.allowed' }).catch(() => null),
+      maxTrade: await mainnetClient.getEnsText({ name: ensName, key: 'agent.uniperk.maxTrade' }).catch(() => null),
+      tokens: await mainnetClient.getEnsText({ name: ensName, key: 'agent.uniperk.tokens' }).catch(() => null),
+      slippage: await mainnetClient.getEnsText({ name: ensName, key: 'agent.uniperk.slippage' }).catch(() => null),
+      expires: await mainnetClient.getEnsText({ name: ensName, key: 'agent.uniperk.expires' }).catch(() => null)
+    };
+
+    console.log(`   📖 ENS records for ${ensName}:`, textRecords);
+
+    // Parse text records with defaults
+    return {
+      allowed: textRecords.allowed === 'true',
+      maxTrade: textRecords.maxTrade ? parseInt(textRecords.maxTrade) : 1000,
+      tokens: textRecords.tokens ? textRecords.tokens.split(',').map(t => t.trim()) : ['ETH', 'USDC', 'WETH'],
+      slippage: textRecords.slippage ? parseInt(textRecords.slippage) : 50,
+      expires: textRecords.expires ? parseInt(textRecords.expires) : Math.floor(Date.now() / 1000) + 86400
+    };
+  } catch (error) {
+    console.log(`   ⚠️  ENS read failed: ${error.message}, using defaults`);
+    return {
+      allowed: true,
+      maxTrade: 1000,
+      tokens: ['ETH', 'USDC', 'WETH'],
+      slippage: 50,
+      expires: Math.floor(Date.now() / 1000) + 86400
+    };
+  }
 }
 
 /**
