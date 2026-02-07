@@ -20,7 +20,7 @@ contract AgentRegistry is Ownable {
         address agent,
         uint256 limit,
         string calldata ensName
-    ) external {
+    ) external onlyOwner {
         require(agent != address(0), "Invalid agent address");
         require(!authorizedAgents[agent], "Agent already registered");
         require(limit > 0, "Limit must be positive");
