@@ -1,0 +1,20 @@
+{
+  "name": "UniPerk Agent",
+  "description": "DeFi trading agent with ENS permissions and Yellow Network execution",
+  "model": "anthropic/claude-sonnet-4-20250514",
+  "skills": ["./skills/yellow-sdk"],
+  "env": {
+    "YELLOW_WS": "wss://clearnet.yellow.com/ws",
+    "NITROLITE_CUSTODY": "0x490fb189DdE3a01B00be9BA5F41e3447FbC838b6",
+    "AGENT_REGISTRY": "0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF",
+    "UNIPERK_HOOK": "0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0",
+    "USDC_ADDRESS": "0x833589fCD6eDb6E08f4c7c32D4f71b54bdA02913",
+    "CHAIN_ID": "8453"
+  },
+  "wallet": "${AGENT_ADDRESS}",
+  "permissions": {
+    "readENS": true,
+    "executeSwaps": true,
+    "manageChannels": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "uniperk-yellow-sdk",
+  "version": "1.0.0",
+  "description": "Yellow Network integration skill for UniPerk agent",
+  "type": "module",
+  "scripts": {
+    "connect": "node scripts/connect.js",
+    "deposit": "node scripts/deposit.js",
+    "trade": "node scripts/trade.js"
+  },
+  "dependencies": {
+    "@erc7824/nitrolite": "^0.5.3",
+    "viem": "^2.0.0",
+    "ws": "^8.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
