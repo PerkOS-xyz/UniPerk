@@ -1,6 +1,6 @@
 'use client'
 
-import { useAccount } from 'wagmi'
+import { useAccount, useEnsName } from 'wagmi'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
@@ -15,6 +15,7 @@ export default function Dashboard() {
   const { address, isConnected } = useAccount()
   const router = useRouter()
   const { tradeCount, tradeVolume, tradesUntilNextTier, isLoading } = useUserTier(address)
+  const { data: ensName } = useEnsName({ address, chainId: 1 })
 
   useEffect(() => {
     if (!isConnected) {
@@ -102,7 +103,7 @@ export default function Dashboard() {
           </Card>
 
           {/* Permissions Card */}
-          <PermissionCard ensName={null} />
+          <PermissionCard ensName={ensName ?? null} />
 
           {/* Wallet Card */}
           <Card className="md:col-span-2 lg:col-span-3">
