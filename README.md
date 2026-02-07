@@ -97,6 +97,36 @@ Users build reputation through successful trades, unlocking progressive fee disc
 | 🥇 Gold     | 50-199 | 3%           |
 | 💎 Platinum | 200+   | 5%           |
 
+## Yellow Network Integration
+
+UniPerk uses Yellow Network state channels for instant, gasless off-chain trading with on-chain settlement via Uniswap V4.
+
+### Trading Flow
+
+```
+1. Connect wallet → Yellow Network WebSocket
+2. Create trading session (deposit USDC)
+3. Execute trades off-chain (instant, $0 gas)
+4. Close session → Settlement on V4 with tier discount
+```
+
+### Yellow SDK
+
+| File | Purpose |
+|------|---------|
+| `lib/yellow/client.ts` | WebSocket connection to Yellow Network |
+| `lib/yellow/session.ts` | State channel session management |
+| `lib/yellow/trading.ts` | Off-chain trade execution |
+| `lib/yellow/settlement.ts` | On-chain settlement via UniPerkHook |
+| `lib/yellow/ens-validator.ts` | ENS permission validation |
+| `hooks/useYellow.ts` | React hook for Yellow integration |
+
+### External Contracts
+
+| Contract | Address |
+|----------|---------|
+| Yellow Custody | `0x490fb189DdE3a01B00be9BA5F41e3447FbC838b6` |
+
 ## Project Structure
 
 ```
@@ -106,7 +136,8 @@ UniPerk/
 │   │   ├── layout.tsx          # Root layout with providers
 │   │   ├── page.tsx            # Landing page
 │   │   ├── dashboard/          # User dashboard
-│   │   └── configure/          # ENS permissions config
+│   │   ├── configure/          # ENS permissions config
+│   │   └── trade/              # Yellow Network trading
 │   ├── components/
 │   │   ├── ui/                 # shadcn components
 │   │   ├── providers.tsx       # Wagmi/RainbowKit setup
@@ -116,8 +147,10 @@ UniPerk/
 │   │   └── ens-config-form.tsx
 │   ├── hooks/
 │   │   ├── useUserTier.ts
-│   │   └── useENSPermissions.ts
+│   │   ├── useENSPermissions.ts
+│   │   └── useYellow.ts        # Yellow Network hook
 │   └── lib/
+│       ├── yellow/             # Yellow SDK integration
 │       ├── utils.ts
 │       ├── wagmi.ts
 │       └── contracts.ts
