@@ -21,10 +21,14 @@ Yellow Network provides state channels for off-chain trading with on-chain settl
 npm install @erc7824/nitrolite
 
 # Required environment variables
+# Production: wss://clearnet.yellow.com/ws
+# Sandbox:    wss://clearnet-sandbox.yellow.com/ws
 YELLOW_WS=wss://clearnet.yellow.com/ws
 NITROLITE_CUSTODY=0x490fb189DdE3a01B00be9BA5F41e3447FbC838b6
 AGENT_PRIVATE_KEY=<from contracts/.env>
 ```
+
+> **Note:** Use `clearnet-sandbox` for testing, `clearnet` for production/demo.
 
 ## Scripts
 
