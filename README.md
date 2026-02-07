@@ -32,9 +32,6 @@ Both contracts are **verified** ✅ on BaseScan — click to view source code:
 | **AgentRegistry** | [`0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF`](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF#code) | ✅ [View Code](https://basescan.org/address/0xd5A14b5dA79Abb78a5B307eC28E9d9711cdd5cEF#code) |
 | **UniPerkHook** | [`0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0`](https://basescan.org/address/0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0#code) | ✅ [View Code](https://basescan.org/address/0x825Fc7Ac1E5456674D7dBbB4D12467E8253740C0#code) |
 
-> 💡 **AgentRegistry**: On-chain agent permissions with trade limits  
-> 💡 **UniPerkHook**: Uniswap V4 hook with tier-based fee discounts
-
 ### Live Pool
 
 | Pool | Fee | Hook |
@@ -77,34 +74,6 @@ flowchart TB
     style V4 fill:#FF007A
 ```
 
-## User Workflow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant ENS as ENS (Mainnet)
-    participant Agent as UniPerk Agent
-    participant Yellow as Yellow Network
-    participant V4 as Uniswap V4
-
-    Note over User,V4: Setup Phase
-    User->>ENS: 1. Set permissions (maxTrade, slippage, tokens)
-    User->>Yellow: 2. Deposit USDC (Nitrolite)
-
-    Note over User,V4: Trading Phase
-    User->>Agent: 3. "Swap 0.5 ETH to USDC"
-    Agent->>ENS: 4. Read permissions
-    ENS-->>Agent: maxTrade=1ETH, slippage=50bps ✓
-    Agent->>Yellow: 5. Execute trade (instant, gasless)
-    Yellow-->>Agent: Trade confirmed
-
-    Note over User,V4: Settlement Phase
-    Yellow->>V4: 6. Settle batch
-    V4->>V4: 7. Hook validates agent
-    V4->>V4: 8. Update tier, apply fee discount
-    V4-->>User: 9. Tokens received
-```
-
 ## ENS Text Records (DeFi DNA)
 
 Users configure agent permissions via ENS text records on their `user.uniperk.eth` subdomain:
@@ -124,97 +93,79 @@ Agents build reputation through successful trades, unlocking progressive fee dis
 | Tier | Trades | Fee Discount |
 |------|--------|--------------|
 | 🥉 Bronze | 0-9 | 0% |
-| 🥈 Silver | 10-49 | 10% |
-| 🥇 Gold | 50-199 | 25% |
-| 💎 Platinum | 200+ | 50% |
-
-## Smart Contracts
-
-### AgentRegistry.sol
-
-ENS hybrid identity system with on-chain fallback. Manages agent permissions and trade limits.
-
-```solidity
-function registerAgent(address agent, uint256 limit, string ensName)
-function validateTrade(address agent, uint256 size) → bool
-function revokeAgent(address agent)
-```
-
-### UniPerkHook.sol
-
-Uniswap V4 hook implementing identity-aware fee discounts based on trader reputation.
-
-```solidity
-function _beforeSwap() → validates agent, applies tier discount
-function _afterSwap() → updates trade count, promotes tier
-```
-
-#### V4 Hook Address Requirements
-
-Uniswap V4 uses **address-encoded permissions** where the hook's address must contain specific bits corresponding to its enabled callbacks. For production deployment:
-
-1. Use `CREATE2` with a mined salt via [HookMiner](https://github.com/uniswap/v4-periphery)
-2. The address bits must match `getHookPermissions()` return value
-3. This demo overrides `validateHookAddress()` for rapid iteration
+| 🥈 Silver | 10-49 | 1% |
+| 🥇 Gold | 50-199 | 3% |
+| 💎 Platinum | 200+ | 5% |
 
 ## Project Structure
 
 ```
 UniPerk/
-├── app/                    # Next.js frontend
+├── app/                        # Next.js 14 Frontend
 │   ├── app/
+│   │   ├── page.tsx            # Landing page
+│   │   ├── dashboard/          # User dashboard
+│   │   └── configure/          # ENS permissions config
 │   ├── components/
-│   └── package.json
+│   │   ├── ui/                 # shadcn components
+│   │   ├── tier-badge.tsx
+│   │   ├── permission-card.tsx
+│   │   └── ens-config-form.tsx
+│   ├── hooks/
+│   │   ├── useUserTier.ts
+│   │   └── useENSPermissions.ts
+│   └── lib/
+│       ├── wagmi.ts
+│       └── contracts.ts
 │
-├── contracts-v4/           # Smart Contracts (Foundry)
+├── contracts/                  # Smart Contracts (Foundry)
 │   ├── src/
+│   │   ├── AgentRegistry.sol
 │   │   ├── UniPerkHook.sol
 │   │   └── interfaces/
-│   │       └── IAgentRegistry.sol
 │   ├── script/
-│   │   ├── 00_DeployUniPerkHook.s.sol
-│   │   ├── UniPerk_CreatePool.s.sol
-│   │   └── UniPerk_AddLiquidity.s.sol
-│   ├── lib/                # Foundry dependencies
 │   └── foundry.toml
 │
-├── agent/                  # OpenClaw agent config
+├── agent/                      # OpenClaw agent config
 │   ├── openclaw.json
+│   ├── SOUL.md
 │   └── skills/
+│       └── yellow-sdk/
 │
-└── docs/                   # Documentation
+├── scripts/                    # Utility scripts
+│   ├── setup-wallet.sh
+│   ├── deploy.sh
+│   └── fund-agent.sh
+│
+└── README.md
 ```
 
 ## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
-| Frontend | Next.js 14, wagmi, viem |
+| Frontend | Next.js 14, wagmi, viem, RainbowKit |
 | Smart Contracts | Solidity 0.8.26, Foundry |
-| V4 Integration | @openzeppelin/uniswap-hooks, HookMiner |
-| ENS | @ensdomains/ensjs, NameStone |
-| Yellow | @erc7824/nitrolite v0.5.3 |
-| Uniswap | v4-core, v4-periphery |
+| V4 Integration | @openzeppelin/uniswap-hooks |
+| ENS | @ensdomains/ensjs |
+| Yellow | @erc7824/nitrolite |
 | Agent | OpenClaw |
-| Payments | x402 via stack.perkos.xyz |
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
-- Git
 - [Foundry](https://book.getfoundry.sh/getting-started/installation)
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/PerkOS-xyz/UniPerk.git
 cd UniPerk
 
-# Install smart contract dependencies
-cd contracts-v4
+# Install contract dependencies
+cd contracts
 forge install
 
 # Install frontend dependencies
@@ -222,106 +173,44 @@ cd ../app
 npm install
 ```
 
-### Build & Test
+### Run Frontend
 
 ```bash
-cd contracts-v4
+cd app
+npm run dev
+```
 
-# Build contracts
+### Build & Test Contracts
+
+```bash
+cd contracts
 forge build
-
-# Run tests
 forge test
 ```
 
-### Deploy to Base Mainnet
-
-```mermaid
-flowchart LR
-    subgraph Step 1: Deploy Hook
-        MINE[🔨 HookMiner] --> |Find valid salt| SALT[Salt + Address]
-        SALT --> |CREATE2| HOOK[UniPerkHook]
-    end
-
-    subgraph Step 2: Create Pool
-        HOOK --> |Register hook| PM[PoolManager]
-        PM --> |Initialize| POOL[WETH/USDC Pool]
-    end
-
-    subgraph Step 3: Add Liquidity
-        POOL --> |Permit2 approve| P2[Permit2]
-        P2 --> |Mint position| POS[PositionManager]
-        POS --> |LP tokens| LP[Liquidity Added ✅]
-    end
-
-    style HOOK fill:#FF007A
-    style POOL fill:#5298FF
-    style LP fill:#00C853
-```
-
-**Why HookMiner?** Uniswap V4 validates hooks by address bits. The hook address must encode its permissions (beforeSwap, afterSwap). HookMiner finds a CREATE2 salt that produces a valid address.
+### Deploy
 
 ```bash
-cd contracts-v4
+cd contracts
 
-# Step 1: Deploy UniPerkHook (mines address + deploys)
+# Deploy hook
 forge script script/00_DeployUniPerkHook.s.sol --rpc-url base --broadcast
 
-# Step 2: Create pool with hook
+# Create pool
 forge script script/UniPerk_CreatePool.s.sol --rpc-url base --broadcast
 
-# Step 3: Add liquidity
+# Add liquidity
 forge script script/UniPerk_AddLiquidity.s.sol --rpc-url base --broadcast
 ```
 
 ## How It Works
 
-### Hook Fee Logic
-
-The hook calculates fee discounts dynamically based on user tier:
-
-```solidity
-function _beforeSwap(
-    address sender,
-    PoolKey calldata key,
-    SwapParams calldata params,
-    bytes calldata hookData
-) internal override returns (bytes4, BeforeSwapDelta, uint24) {
-    // Validate agent permissions
-    (address agent, address user) = _decodeHookData(hookData);
-    if (agent != address(0)) {
-        (bool valid, ) = agentRegistry.validateTrade(agent, tradeSize);
-        require(valid, "Agent validation failed");
-    }
-    
-    // Apply tier discount to pool fee
-    uint24 baseFee = key.fee;
-    uint24 discountBps = tierFeeDiscount[userTier[trader]];
-    uint24 feeOverride = baseFee - uint24((uint256(baseFee) * discountBps) / 10000);
-    
-    return (BaseHook.beforeSwap.selector, BeforeSwapDeltaLibrary.ZERO_DELTA, feeOverride);
-}
-```
-
-### Deployment Flow
-
-```mermaid
-sequenceDiagram
-    participant Dev as Developer
-    participant HM as HookMiner
-    participant PM as PoolManager
-    participant Hook as UniPerkHook
-
-    Dev->>HM: Find CREATE2 salt for hook flags
-    HM-->>Dev: salt + predicted address
-    Dev->>Hook: Deploy via CREATE2
-    Dev->>PM: initialize(poolKey, sqrtPrice)
-    PM->>Hook: Validate address bits
-    PM-->>Dev: Pool ready
-    Dev->>PM: Add liquidity
-```
-
----
+1. **User sets permissions** via ENS text records (maxTrade, slippage, tokens)
+2. **User deposits USDC** to Yellow Network (Nitrolite)
+3. **Agent reads permissions** from ENS before trading
+4. **Trades execute instantly** via Yellow state channels
+5. **Settlement happens on-chain** through UniPerkHook
+6. **Tier updates automatically** based on trade count
 
 ## Why This Matters
 
@@ -330,10 +219,6 @@ sequenceDiagram
 - **$15-50** average gas cost for multi-step strategies
 
 UniPerk solves all three: one configuration, instant execution, trustless control.
-
-## Team
-
-Built for [ETH Global Hack The Money 2026](https://ethglobal.com/events/hackmoney2026)
 
 ## License
 

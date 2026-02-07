@@ -1,7 +1,6 @@
 {
   "name": "UniPerk Agent",
   "description": "DeFi trading agent with ENS permissions and Yellow Network execution",
-  "model": "anthropic/claude-sonnet-4-20250514",
   "skills": ["./skills/yellow-sdk"],
   "env": {
     "YELLOW_WS": "wss://clearnet.yellow.com/ws",
