@@ -87,7 +87,6 @@ export async function settleToUniswapV4(
       tierDiscount: 1
     };
   } catch (error) {
-    console.error('Settlement failed:', error);
     throw error;
   }
 }

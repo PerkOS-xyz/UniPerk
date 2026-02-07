@@ -25,7 +25,6 @@ export class YellowClient {
           this.isConnected = true;
           this.reconnectAttempts = 0;
           this.emit('connected', {});
-          console.log('🟢 Yellow Network connected');
           resolve();
         };
 
@@ -46,7 +45,7 @@ export class YellowClient {
             this.emit('message', message);
             this.handleMessage(message);
           } catch {
-            console.warn('Failed to parse Yellow message:', event.data);
+            // Silent fail on parse errors
           }
         };
       } catch (error) {
@@ -76,8 +75,7 @@ export class YellowClient {
   private attemptReconnect() {
     if (this.reconnectAttempts < this.maxReconnects) {
       this.reconnectAttempts++;
-      console.log(`🔄 Reconnecting to Yellow... attempt ${this.reconnectAttempts}`);
-      setTimeout(() => this.connect().catch(console.error), 2000 * this.reconnectAttempts);
+      setTimeout(() => this.connect().catch(() => {}), 2000 * this.reconnectAttempts);
     }
   }
 
