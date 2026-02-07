@@ -91,7 +91,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center py-12 text-gray-500 text-sm">
-        <p>Built for ETH Global Hack The Money 2026</p>
+        <p>@UniPerk 2026</p>
       </footer>
     </main>
   )
