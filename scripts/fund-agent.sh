@@ -5,8 +5,8 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONTRACTS_DIR="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$CONTRACTS_DIR/.env"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+ENV_FILE="$ROOT_DIR/contracts/.env"
 
 # Load environment
 if [ -f "$ENV_FILE" ]; then
