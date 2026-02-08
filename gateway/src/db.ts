@@ -12,7 +12,8 @@ export interface NameRecord {
 }
 
 function getSql(env: Env) {
-  return neon(env.DATABASE_URL, { fetchOptions: { cache: 'no-store' } })
+  // Workers fetch no soporta la opción 'cache'; no pasar fetchOptions evita el error
+  return neon(env.DATABASE_URL)
 }
 
 export async function getName(env: Env, name: string): Promise<NameRecord | null> {
