@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { WalletConnect } from '@/components/wallet-connect'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { TierBadge } from '@/components/tier-badge'
 import { PermissionCard } from '@/components/permission-card'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
@@ -34,9 +35,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🦄</span>
@@ -48,6 +49,7 @@ export default function Dashboard() {
                 Configure
               </Button>
             </Link>
+            <ThemeToggle />
             <WalletConnect />
           </div>
         </div>
@@ -78,23 +80,23 @@ export default function Dashboard() {
             <CardContent>
               {isLoading ? (
                 <div className="animate-pulse space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
-                  <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
                 </div>
               ) : (
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Total Trades</span>
+                    <span className="text-gray-500 dark:text-gray-400">Total Trades</span>
                     <span className="font-semibold">{tradeCount.toString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">Volume</span>
+                    <span className="text-gray-500 dark:text-gray-400">Volume</span>
                     <span className="font-semibold">{formatVolume(tradeVolume)}</span>
                   </div>
                   {tradesUntilNextTier !== null && tradesUntilNextTier > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Next Tier</span>
+                      <span className="text-gray-500 dark:text-gray-400">Next Tier</span>
                       <span className="font-semibold">{tradesUntilNextTier} trades</span>
                     </div>
                   )}
@@ -111,8 +113,8 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="animate-pulse space-y-3">
-                  <div className="h-4 bg-gray-200 rounded w-3/4" />
-                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
                 </div>
               </CardContent>
             </Card>
@@ -127,7 +129,7 @@ export default function Dashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   Get your <strong>you.uniperk.eth</strong> subdomain (no gas), then configure trading limits and allowed tokens.
                 </p>
                 <Link href="/register">
@@ -144,7 +146,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <code className="bg-gray-100 px-3 py-2 rounded text-sm break-all">
+                <code className="bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded text-sm break-all">
                   {address}
                 </code>
                 <a 

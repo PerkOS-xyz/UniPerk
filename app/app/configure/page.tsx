@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { WalletConnect } from '@/components/wallet-connect'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { ENSConfigForm } from '@/components/ens-config-form'
 import { Button } from '@/components/ui/button'
 import { useUniperkSubdomain } from '@/hooks/useUniperkSubdomain'
@@ -27,8 +28,8 @@ export default function ConfigurePage() {
 
   if (subdomainLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
             <Link href="/" className="flex items-center gap-2">
               <span className="text-2xl">🦄</span>
@@ -39,8 +40,8 @@ export default function ConfigurePage() {
         </header>
         <main className="max-w-2xl mx-auto p-6">
           <div className="animate-pulse space-y-4 py-8">
-            <div className="h-8 bg-gray-200 rounded w-1/3" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
           </div>
         </main>
       </div>
@@ -49,8 +50,8 @@ export default function ConfigurePage() {
 
   if (!subdomain) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
             <Link href="/" className="flex items-center gap-2">
               <span className="text-2xl">🦄</span>
@@ -68,7 +69,7 @@ export default function ConfigurePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 Register your <strong>you.uniperk.eth</strong> subdomain first (no gas), then you can configure trading limits here.
               </p>
               <Link href="/register">
@@ -85,9 +86,9 @@ export default function ConfigurePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🦄</span>
@@ -99,6 +100,7 @@ export default function ConfigurePage() {
                 ← Back to Dashboard
               </Button>
             </Link>
+            <ThemeToggle />
             <WalletConnect />
           </div>
         </div>
@@ -107,10 +109,10 @@ export default function ConfigurePage() {
       {/* Main Content */}
       <main className="max-w-2xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-2">Configure Permissions</h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
           Set permissions for <strong>{subdomain}</strong>. Stored offchain and read by agents via ENS.
         </p>
-        
+
         <ENSConfigForm
           subdomain={subdomain}
           onSubmit={() => {
@@ -118,10 +120,10 @@ export default function ConfigurePage() {
           }}
         />
 
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h3 className="font-medium text-blue-900">How it works</h3>
-          <p className="text-sm text-blue-800 mt-1">
-            These settings are stored as ENS text records on your subdomain. 
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+          <h3 className="font-medium text-blue-900 dark:text-blue-200">How it works</h3>
+          <p className="text-sm text-blue-800 dark:text-blue-300 mt-1">
+            These settings are stored as ENS text records on your subdomain.
             AI agents read these permissions before executing any trades.
           </p>
         </div>

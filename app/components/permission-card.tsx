@@ -19,9 +19,9 @@ export function PermissionCard({ ensName }: PermissionCardProps) {
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
-            <div className="h-4 bg-gray-200 rounded w-2/3" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
           </div>
         </CardContent>
       </Card>
@@ -41,24 +41,24 @@ export function PermissionCard({ ensName }: PermissionCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-between items-center">
-          <span className="text-gray-500">Status</span>
+          <span className="text-gray-500 dark:text-gray-400">Status</span>
           <Badge variant={allowed && !isExpired ? 'default' : 'secondary'}>
             {allowed && !isExpired ? '✓ Active' : '✗ Inactive'}
           </Badge>
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-gray-500">Max Trade</span>
+          <span className="text-gray-500 dark:text-gray-400">Max Trade</span>
           <span className="font-medium">{maxTrade.toLocaleString()} USDC</span>
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-gray-500">Slippage</span>
+          <span className="text-gray-500 dark:text-gray-400">Slippage</span>
           <span className="font-medium">{(slippage / 100).toFixed(2)}%</span>
         </div>
 
         <div className="flex justify-between items-center">
-          <span className="text-gray-500">Tokens</span>
+          <span className="text-gray-500 dark:text-gray-400">Tokens</span>
           <div className="flex gap-1">
             {tokens.map((token) => (
               <Badge key={token} variant="outline" className="text-xs">
@@ -70,7 +70,7 @@ export function PermissionCard({ ensName }: PermissionCardProps) {
 
         {expiresDate && (
           <div className="flex justify-between items-center">
-            <span className="text-gray-500">Expires</span>
+            <span className="text-gray-500 dark:text-gray-400">Expires</span>
             <span className={isExpired ? 'text-red-500' : 'font-medium'}>
               {isExpired ? 'Expired' : expiresDate}
             </span>

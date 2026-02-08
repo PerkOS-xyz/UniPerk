@@ -8,9 +8,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default: "bg-uniperk-pink text-white shadow hover:bg-uniperk-pink/90",
-        secondary: "bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-100/80",
-        outline: "border border-gray-200 bg-white shadow-sm hover:bg-gray-100",
-        ghost: "hover:bg-gray-100",
+        secondary: "bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-100/80 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-800/80",
+        outline: "border border-gray-200 bg-white shadow-sm hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-100",
+        ghost: "hover:bg-gray-100 dark:hover:bg-gray-800",
         link: "text-uniperk-pink underline-offset-4 hover:underline",
       },
       size: {

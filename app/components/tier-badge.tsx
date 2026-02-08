@@ -14,7 +14,7 @@ export function TierBadge({ address, showDetails = false }: TierBadgeProps) {
   if (isLoading) {
     return (
       <div className="animate-pulse">
-        <div className="h-8 w-24 bg-gray-200 rounded" />
+        <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
       </div>
     )
   }
@@ -38,25 +38,25 @@ export function TierBadge({ address, showDetails = false }: TierBadgeProps) {
           <Badge variant={variant} className="text-lg px-4 py-1">
             {tierName}
           </Badge>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {feeDiscount}% fee discount
           </p>
         </div>
       </div>
       
       {tradesUntilNextTier !== null && tradesUntilNextTier > 0 && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
           <span className="font-medium">{tradesUntilNextTier}</span> trades until next tier
         </div>
       )}
       
       {tierName === 'PLATINUM' && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
           🎉 Maximum tier reached!
         </div>
       )}
       
-      <div className="text-xs text-gray-400">
+      <div className="text-xs text-gray-400 dark:text-gray-500">
         Total trades: {tradeCount.toString()}
       </div>
     </div>
