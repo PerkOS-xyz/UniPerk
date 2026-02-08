@@ -1,0 +1,7 @@
+name = "uniperk-ens-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+# Secrets (set via: wrangler secret put <NAME>)
+# - PRIVATE_KEY: hex private key for signing CCIP responses (must match OffchainResolver signer)
+# - DATABASE_URL: Neon connection string (e.g. postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require)

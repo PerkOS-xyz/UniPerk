@@ -1,0 +1,18 @@
+[profile.default]
+src = "src"
+out = "out"
+# Usa las dependencias del monorepo (contracts/lib), sin otro repo ni forge install
+libs = ["lib", "../../contracts/lib"]
+solc = "0.8.24"
+evm_version = "cancun"
+
+remappings = [
+    "@openzeppelin/contracts/=../../contracts/lib/uniswap-hooks/lib/v4-core/lib/openzeppelin-contracts/contracts/",
+    "forge-std/=../../contracts/lib/forge-std/src/"
+]
+
+[rpc_endpoints]
+# Si ves 429 (rate limit), usa una RPC con API key: --rpc-url https://eth-mainnet.g.alchemy.com/v2/TU_KEY
+mainnet = "https://ethereum.publicnode.com"
+mainnet_alchemy = "https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}"
+mainnet_infura = "https://mainnet.infura.io/v3/${INFURA_API_KEY}"

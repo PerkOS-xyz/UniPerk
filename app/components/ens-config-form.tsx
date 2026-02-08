@@ -1,13 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAccount, useEnsName, useEnsResolver, useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { useAccount, useEnsName, useEnsResolver, useWriteContract, useWaitForTransactionReceipt, useSignMessage } from 'wagmi'
 import { namehash, encodeFunctionData } from 'viem'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
+import { GATEWAY_API_URL } from '@/lib/constants'
 
-// ENS PublicResolver ABI — only setText and multicall
+// ENS PublicResolver ABI — only setText and multicall (used when no subdomain / legacy)
 const RESOLVER_ABI = [
   {
     name: 'setText',
@@ -30,6 +31,8 @@ const RESOLVER_ABI = [
 ] as const
 
 interface ENSConfigFormProps {
+  /** When set, permissions are saved via gateway API (offchain). When null, uses ENS main name + onchain setText (legacy). */
+  subdomain?: string | null
   onSubmit?: (data: ENSFormData) => void
 }
 
@@ -41,8 +44,10 @@ interface ENSFormData {
   expires: string
 }
 
-export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
+export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
   const { address } = useAccount()
+  const useGateway = !!subdomain && !!GATEWAY_API_URL
+
   const { data: ensName, isLoading: ensLoading } = useEnsName({
     address,
     chainId: 1,
@@ -50,10 +55,11 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
   const { data: resolverAddress } = useEnsResolver({
     name: ensName as string,
     chainId: 1,
-    query: { enabled: !!ensName },
+    query: { enabled: !!ensName && !useGateway },
   })
 
-  const { writeContract, data: txHash, isPending, error: writeError, reset } = useWriteContract()
+  const { signMessageAsync, isPending: isSigning } = useSignMessage()
+  const { writeContract, data: txHash, isPending: isWritePending, error: writeError, reset } = useWriteContract()
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash: txHash,
     chainId: 1,
@@ -67,12 +73,14 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
     expires: '',
   })
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [apiError, setApiError] = useState<string | null>(null)
+  const [apiSuccess, setApiSuccess] = useState(false)
 
   useEffect(() => {
-    if (isSuccess) {
+    if (!useGateway && isSuccess) {
       onSubmit?.(formData)
     }
-  }, [isSuccess])
+  }, [isSuccess, useGateway])
 
   const validate = (): string | null => {
     const maxTrade = Number(formData.maxTrade)
@@ -96,32 +104,66 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!ensName || !resolverAddress) return
+    setValidationError(null)
+    setApiError(null)
+    setApiSuccess(false)
+    reset()
 
     const error = validate()
     if (error) {
       setValidationError(error)
       return
     }
-    setValidationError(null)
-    reset()
 
+    if (useGateway && subdomain && address) {
+      try {
+        const message = `Update permissions for ${subdomain}`
+        const signature = await signMessageAsync({ message })
+        const permissions: Record<string, unknown> = {
+          allowed: formData.allowed,
+          maxTrade: formData.maxTrade,
+          tokens: formData.tokens,
+          slippage: formData.slippage,
+        }
+        if (formData.expires) {
+          permissions.expires = Math.floor(new Date(formData.expires).getTime() / 1000).toString()
+        }
+        const res = await fetch(`${GATEWAY_API_URL.replace(/\/$/, '')}/permissions`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: subdomain,
+            address,
+            signature,
+            message,
+            permissions,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          setApiError(data.error?.message || data.error?.error || 'Failed to update permissions')
+          return
+        }
+        setApiSuccess(true)
+        onSubmit?.(formData)
+      } catch (err) {
+        setApiError(err instanceof Error ? err.message : 'Failed to update permissions')
+      }
+      return
+    }
+
+    // Legacy: onchain setText
+    if (!ensName || !resolverAddress) return
     const node = namehash(ensName)
-
-    // Build text records
     const records: [string, string][] = [
       ['agent.uniperk.allowed', formData.allowed ? 'true' : 'false'],
       ['agent.uniperk.maxTrade', formData.maxTrade],
       ['agent.uniperk.tokens', formData.tokens],
       ['agent.uniperk.slippage', formData.slippage],
     ]
-
     if (formData.expires) {
-      const expiresTimestamp = Math.floor(new Date(formData.expires).getTime() / 1000).toString()
-      records.push(['agent.uniperk.expires', expiresTimestamp])
+      records.push(['agent.uniperk.expires', Math.floor(new Date(formData.expires).getTime() / 1000).toString()])
     }
-
-    // Encode each setText call, then batch via multicall
     const calls = records.map(([key, value]) =>
       encodeFunctionData({
         abi: RESOLVER_ABI,
@@ -129,7 +171,6 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
         args: [node, key, value],
       })
     )
-
     writeContract({
       address: resolverAddress,
       abi: RESOLVER_ABI,
@@ -139,10 +180,10 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
     })
   }
 
-  const isSubmitting = isPending || isConfirming
+  const isSubmitting = useGateway ? isSigning : isWritePending || isConfirming
+  const displayName = subdomain ?? ensName ?? null
 
-  // Loading ENS name
-  if (ensLoading) {
+  if (!useGateway && ensLoading) {
     return (
       <Card>
         <CardHeader>
@@ -158,8 +199,7 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
     )
   }
 
-  // No ENS name found
-  if (!ensName && address) {
+  if (!useGateway && !ensName && address) {
     return (
       <Card>
         <CardHeader>
@@ -196,8 +236,8 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
       <CardHeader>
         <CardTitle>Configure Agent Permissions</CardTitle>
         <CardDescription>
-          {ensName ? (
-            <>Setting text records on <strong>{ensName}</strong></>
+          {displayName ? (
+            <>Settings for <strong>{displayName}</strong></>
           ) : (
             'Set permissions for AI agents to trade on your behalf'
           )}
@@ -205,7 +245,6 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Allowed Toggle */}
           <div className="flex items-center justify-between">
             <div>
               <label className="font-medium">Enable Agent Trading</label>
@@ -226,7 +265,6 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
             </button>
           </div>
 
-          {/* Max Trade */}
           <div className="space-y-2">
             <label className="font-medium">Maximum Trade Size (USDC)</label>
             <Input
@@ -238,7 +276,6 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
             <p className="text-sm text-gray-500">Maximum amount per trade</p>
           </div>
 
-          {/* Tokens */}
           <div className="space-y-2">
             <label className="font-medium">Allowed Tokens</label>
             <Input
@@ -250,7 +287,6 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
             <p className="text-sm text-gray-500">Comma-separated list of tokens</p>
           </div>
 
-          {/* Slippage */}
           <div className="space-y-2">
             <label className="font-medium">Max Slippage (basis points)</label>
             <Input
@@ -262,7 +298,6 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
             <p className="text-sm text-gray-500">50 = 0.5%, 100 = 1%</p>
           </div>
 
-          {/* Expires */}
           <div className="space-y-2">
             <label className="font-medium">Permission Expiry</label>
             <Input
@@ -273,7 +308,6 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
             <p className="text-sm text-gray-500">Leave empty for no expiration</p>
           </div>
 
-          {/* Status messages */}
           {validationError && (
             <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
               {validationError}
@@ -286,28 +320,36 @@ export function ENSConfigForm({ onSubmit }: ENSConfigFormProps) {
             </div>
           )}
 
-          {isConfirming && (
+          {apiError && (
+            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+              {apiError}
+            </div>
+          )}
+
+          {!useGateway && isConfirming && (
             <div className="p-3 bg-yellow-50 text-yellow-700 rounded-lg text-sm">
               Waiting for confirmation...
             </div>
           )}
 
-          {isSuccess && (
+          {(apiSuccess || (!useGateway && isSuccess)) && (
             <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm">
-              Permissions saved to ENS!
+              Permissions saved!
             </div>
           )}
 
           <Button
             type="submit"
             className="w-full"
-            disabled={isSubmitting || !resolverAddress}
+            disabled={isSubmitting || (!useGateway && !resolverAddress)}
           >
-            {isPending
-              ? 'Confirm in Wallet...'
-              : isConfirming
-                ? 'Saving to ENS...'
-                : 'Save Permissions'}
+            {isSubmitting
+              ? useGateway
+                ? 'Sign in wallet...'
+                : isWritePending
+                  ? 'Confirm in Wallet...'
+                  : 'Saving...'
+              : 'Save Permissions'}
           </Button>
         </form>
       </CardContent>

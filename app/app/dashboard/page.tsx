@@ -1,6 +1,6 @@
 'use client'
 
-import { useAccount, useEnsName } from 'wagmi'
+import { useAccount } from 'wagmi'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
@@ -10,12 +10,13 @@ import { PermissionCard } from '@/components/permission-card'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useUserTier } from '@/hooks/useUserTier'
+import { useUniperkSubdomain } from '@/hooks/useUniperkSubdomain'
 
 export default function Dashboard() {
   const { address, isConnected } = useAccount()
   const router = useRouter()
   const { tradeCount, tradeVolume, tradesUntilNextTier, isLoading } = useUserTier(address)
-  const { data: ensName } = useEnsName({ address, chainId: 1 })
+  const { subdomain, isLoading: subdomainLoading } = useUniperkSubdomain(address)
 
   useEffect(() => {
     if (!isConnected) {
@@ -102,8 +103,39 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Permissions Card */}
-          <PermissionCard ensName={ensName ?? null} />
+          {/* Permissions Card — uses subdomain (e.g. alice.uniperk.eth) or CTA to register */}
+          {subdomainLoading ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Agent Permissions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="animate-pulse space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                </div>
+              </CardContent>
+            </Card>
+          ) : subdomain ? (
+            <PermissionCard ensName={subdomain} />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Agent Permissions</CardTitle>
+                <CardDescription>
+                  Register a subdomain to set permissions for AI agents
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  Get your <strong>you.uniperk.eth</strong> subdomain (no gas), then configure trading limits and allowed tokens.
+                </p>
+                <Link href="/register">
+                  <Button className="w-full">Register subdomain</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Wallet Card */}
           <Card className="md:col-span-2 lg:col-span-3">
