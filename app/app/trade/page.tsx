@@ -6,6 +6,7 @@ import { parseUnits, formatUnits } from 'viem';
 import Link from 'next/link';
 import { useYellow } from '@/hooks/useYellow';
 import { WalletConnect } from '@/components/wallet-connect';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,8 +47,8 @@ export default function TradePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🦄</span>
@@ -57,6 +58,7 @@ export default function TradePage() {
             <Link href="/dashboard">
               <Button variant="outline" size="sm">Dashboard</Button>
             </Link>
+            <ThemeToggle />
             <WalletConnect />
           </div>
         </div>
@@ -67,8 +69,8 @@ export default function TradePage() {
           <span className="text-3xl">🟡</span>
           <h1 className="text-3xl font-bold">Yellow Network Trading</h1>
         </div>
-        
-        <p className="text-gray-600">
+
+        <p className="text-gray-600 dark:text-gray-400">
           Execute instant, gasless trades via Yellow Network state channels. 
           Settlement happens on Uniswap V4 with tier discounts.
         </p>
@@ -84,7 +86,7 @@ export default function TradePage() {
               <span>Wallet: {walletConnected ? `${address?.slice(0, 6)}...${address?.slice(-4)}` : 'Not connected'}</span>
             </div>
             <div className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full ${yellowConnected ? 'bg-yellow-500 animate-pulse' : 'bg-gray-300'}`} />
+              <div className={`w-3 h-3 rounded-full ${yellowConnected ? 'bg-yellow-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'}`} />
               <span>Yellow Network: {yellowConnected ? 'Connected' : 'Disconnected'}</span>
             </div>
             {!walletConnected && <WalletConnect />}
@@ -109,7 +111,7 @@ export default function TradePage() {
                     <span>✅</span>
                     <span className="font-medium">Session Active</span>
                   </div>
-                  <code className="text-xs bg-gray-100 p-2 rounded block break-all">
+                  <code className="text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded block break-all">
                     {sessionId}
                   </code>
                   <Button 
@@ -143,7 +145,7 @@ export default function TradePage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-end">
                 <div>
-                  <label className="text-sm text-gray-500 block mb-1">From</label>
+                  <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">From</label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
@@ -155,7 +157,7 @@ export default function TradePage() {
                     <select
                       value={fromToken}
                       onChange={(e) => setFromToken(e.target.value)}
-                      className="border rounded px-3 py-2 bg-white"
+                      className="border rounded px-3 py-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                     >
                       <option>USDC</option>
                       <option>WETH</option>
@@ -164,11 +166,11 @@ export default function TradePage() {
                 </div>
                 <div className="pb-2 text-xl">→</div>
                 <div>
-                  <label className="text-sm text-gray-500 block mb-1">To</label>
+                  <label className="text-sm text-gray-500 dark:text-gray-400 block mb-1">To</label>
                   <select
                     value={toToken}
                     onChange={(e) => setToToken(e.target.value)}
-                    className="border rounded px-3 py-2 w-full bg-white"
+                    className="border rounded px-3 py-2 w-full bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                   >
                     <option>WETH</option>
                     <option>USDC</option>
@@ -176,7 +178,7 @@ export default function TradePage() {
                 </div>
               </div>
               
-              <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
+              <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-3 rounded-lg">
                 <div className="flex justify-between text-sm">
                   <span>⚡ Execution</span>
                   <span className="font-medium">Instant (off-chain)</span>
@@ -207,7 +209,7 @@ export default function TradePage() {
             <CardContent>
               <div className="space-y-2">
                 {tradeHistory.map((trade, i) => (
-                  <div key={i} className="flex justify-between text-sm border-b pb-2 last:border-0">
+                  <div key={i} className="flex justify-between text-sm border-b dark:border-gray-700 pb-2 last:border-0">
                     <div>
                       <span className="font-medium">{formatUnits(trade.executedAmount, 6)} USDC</span>
                       <span className="text-gray-400 mx-2">→</span>
@@ -227,15 +229,15 @@ export default function TradePage() {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 p-4 rounded-lg">
+          <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-4 rounded-lg">
             <span className="font-medium">Error:</span> {error}
           </div>
         )}
 
-        <Card className="bg-gray-50">
+        <Card className="bg-gray-50 dark:bg-gray-900">
           <CardContent className="pt-6">
             <h3 className="font-semibold mb-2">How it works</h3>
-            <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+            <ol className="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-decimal list-inside">
               <li>Create a trading session (deposits USDC to Yellow)</li>
               <li>Execute multiple trades instantly (off-chain, $0 gas)</li>
               <li>Close session to settle final balance on Uniswap V4</li>

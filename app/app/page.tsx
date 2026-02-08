@@ -4,6 +4,7 @@ import { useAccount } from 'wagmi'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { WalletConnect } from '@/components/wallet-connect'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 export default function Home() {
@@ -17,14 +18,17 @@ export default function Home() {
   }, [isConnected, router])
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
       {/* Header */}
       <header className="flex justify-between items-center p-6 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
           <span className="text-2xl">🦄</span>
           <span className="font-bold text-xl">UniPerk</span>
         </div>
-        <WalletConnect />
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <WalletConnect />
+        </div>
       </header>
 
       {/* Hero */}
@@ -33,7 +37,7 @@ export default function Home() {
           Trust Layer for{' '}
           <span className="text-uniperk-pink">DeFi</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        <p className="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
           Portable identity, instant execution, smart settlement. 
           Give AI agents permission to trade on your behalf — safely.
         </p>
@@ -90,7 +94,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="text-center py-12 text-gray-500 text-sm">
+      <footer className="text-center py-12 text-gray-500 dark:text-gray-400 text-sm">
         <p>@UniPerk 2026</p>
       </footer>
     </main>

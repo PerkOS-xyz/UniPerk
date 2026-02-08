@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { WalletConnect } from '@/components/wallet-connect'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card'
@@ -71,8 +72,8 @@ export default function RegisterPage() {
 
   if (subdomainLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-200">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+        <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
             <Link href="/" className="flex items-center gap-2">
               <span className="text-2xl">🦄</span>
@@ -83,8 +84,8 @@ export default function RegisterPage() {
         </header>
         <main className="max-w-md mx-auto p-6">
           <div className="animate-pulse space-y-4 py-8">
-            <div className="h-8 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
           </div>
         </main>
       </div>
@@ -92,8 +93,8 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
         <div className="flex justify-between items-center p-4 max-w-6xl mx-auto">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-2xl">🦄</span>
@@ -105,6 +106,7 @@ export default function RegisterPage() {
                 ← Dashboard
               </Button>
             </Link>
+            <ThemeToggle />
             <WalletConnect />
           </div>
         </div>
@@ -112,7 +114,7 @@ export default function RegisterPage() {
 
       <main className="max-w-md mx-auto p-6">
         <h1 className="text-2xl font-bold mb-2">Register your subdomain</h1>
-        <p className="text-gray-600 mb-6">
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
           Choose a name to get <strong>you.uniperk.eth</strong>. No gas cost.
         </p>
 
@@ -125,7 +127,7 @@ export default function RegisterPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+              <div className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-2">
                 <Input
                   placeholder="yourname"
                   value={label}
@@ -133,14 +135,14 @@ export default function RegisterPage() {
                   className="border-0 bg-transparent focus-visible:ring-0"
                   maxLength={63}
                 />
-                <span className="text-gray-500 whitespace-nowrap">.{UNIPERK_ENS_DOMAIN}</span>
+                <span className="text-gray-500 dark:text-gray-400 whitespace-nowrap">.{UNIPERK_ENS_DOMAIN}</span>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 Lowercase letters, numbers, and hyphens only. 1–63 characters.
               </p>
 
               {error && (
-                <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                <div className="p-3 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 rounded-lg text-sm">
                   {error}
                 </div>
               )}

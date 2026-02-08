@@ -191,8 +191,8 @@ export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-3 py-4">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
           </div>
         </CardContent>
       </Card>
@@ -210,10 +210,10 @@ export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
         </CardHeader>
         <CardContent>
           <div className="text-center py-6 space-y-3">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               You need an ENS name to configure agent permissions.
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               ENS text records store your DeFi permissions on-chain.
             </p>
             <a
@@ -248,13 +248,13 @@ export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
           <div className="flex items-center justify-between">
             <div>
               <label className="font-medium">Enable Agent Trading</label>
-              <p className="text-sm text-gray-500">Allow agents to execute trades</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Allow agents to execute trades</p>
             </div>
             <button
               type="button"
               onClick={() => setFormData({ ...formData, allowed: !formData.allowed })}
               className={`relative w-12 h-6 rounded-full transition-colors ${
-                formData.allowed ? 'bg-uniperk-pink' : 'bg-gray-300'
+                formData.allowed ? 'bg-uniperk-pink' : 'bg-gray-300 dark:bg-gray-600'
               }`}
             >
               <span
@@ -273,7 +273,7 @@ export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
               onChange={(e) => setFormData({ ...formData, maxTrade: e.target.value })}
               placeholder="1000"
             />
-            <p className="text-sm text-gray-500">Maximum amount per trade</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Maximum amount per trade</p>
           </div>
 
           <div className="space-y-2">
@@ -284,7 +284,7 @@ export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
               onChange={(e) => setFormData({ ...formData, tokens: e.target.value })}
               placeholder="ETH,USDC,WETH"
             />
-            <p className="text-sm text-gray-500">Comma-separated list of tokens</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Comma-separated list of tokens</p>
           </div>
 
           <div className="space-y-2">
@@ -295,7 +295,7 @@ export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
               onChange={(e) => setFormData({ ...formData, slippage: e.target.value })}
               placeholder="50"
             />
-            <p className="text-sm text-gray-500">50 = 0.5%, 100 = 1%</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">50 = 0.5%, 100 = 1%</p>
           </div>
 
           <div className="space-y-2">
@@ -305,35 +305,35 @@ export function ENSConfigForm({ subdomain, onSubmit }: ENSConfigFormProps) {
               value={formData.expires}
               onChange={(e) => setFormData({ ...formData, expires: e.target.value })}
             />
-            <p className="text-sm text-gray-500">Leave empty for no expiration</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Leave empty for no expiration</p>
           </div>
 
           {validationError && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 rounded-lg text-sm">
               {validationError}
             </div>
           )}
 
           {writeError && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 rounded-lg text-sm">
               Transaction failed: {writeError.message.split('\n')[0]}
             </div>
           )}
 
           {apiError && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 rounded-lg text-sm">
               {apiError}
             </div>
           )}
 
           {!useGateway && isConfirming && (
-            <div className="p-3 bg-yellow-50 text-yellow-700 rounded-lg text-sm">
+            <div className="p-3 bg-yellow-50 dark:bg-yellow-950 text-yellow-700 dark:text-yellow-300 rounded-lg text-sm">
               Waiting for confirmation...
             </div>
           )}
 
           {(apiSuccess || (!useGateway && isSuccess)) && (
-            <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm">
+            <div className="p-3 bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-lg text-sm">
               Permissions saved!
             </div>
           )}
