@@ -12,12 +12,14 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { useUserTier } from '@/hooks/useUserTier'
 import { useUniperkSubdomain } from '@/hooks/useUniperkSubdomain'
+import { useSubdomainsList } from '@/hooks/useSubdomainsList'
 
 export default function Dashboard() {
   const { address, isConnected } = useAccount()
   const router = useRouter()
   const { tradeCount, tradeVolume, tradesUntilNextTier, isLoading } = useUserTier(address)
   const { subdomain, isLoading: subdomainLoading } = useUniperkSubdomain(address)
+  const { data: subdomainsList = [], isLoading: subdomainsLoading } = useSubdomainsList(50)
 
   useEffect(() => {
     if (!isConnected) {
@@ -159,6 +161,58 @@ export default function Dashboard() {
                   </Button>
                 </a>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Registered subdomains list */}
+          <Card className="md:col-span-2 lg:col-span-3">
+            <CardHeader>
+              <CardTitle className="text-lg">Registered subdomains</CardTitle>
+              <CardDescription>
+                Subdominios uniperk.eth registrados. Verificables en ENS si uniperk.eth tiene el resolver CCIP configurado.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {subdomainsLoading ? (
+                <div className="animate-pulse space-y-2">
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5" />
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
+                </div>
+              ) : subdomainsList.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">Ningún subdominio registrado aún.</p>
+              ) : (
+                <ul className="space-y-2 max-h-64 overflow-y-auto">
+                  {subdomainsList.map(({ name, owner }) => (
+                    <li
+                      key={name}
+                      className="flex items-center justify-between gap-2 py-1.5 border-b border-gray-100 dark:border-gray-800 last:border-0"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="font-medium text-gray-900 dark:text-gray-100 truncate">{name}</span>
+                        <a
+                          href={`https://app.ens.domains/${encodeURIComponent(name)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline shrink-0"
+                          title="Ver en ENS"
+                        >
+                          Verificar en ENS
+                        </a>
+                      </div>
+                      <a
+                        href={`https://basescan.org/address/${owner}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 truncate max-w-[140px]"
+                        title={owner}
+                      >
+                        {owner.slice(0, 6)}…{owner.slice(-4)}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { createPublicClient, http } from 'viem'
 import { mainnet } from 'viem/chains'
+import { MAINNET_RPC_URL } from '@/lib/constants'
 
 interface ENSPermissions {
   allowed: boolean
@@ -15,7 +16,7 @@ interface ENSPermissions {
 
 const mainnetClient = createPublicClient({
   chain: mainnet,
-  transport: http(),
+  transport: http(MAINNET_RPC_URL),
 })
 
 async function fetchENSPermissions(ensName: string): Promise<Omit<ENSPermissions, 'isLoading' | 'error' | 'ensName'>> {

@@ -1,9 +1,10 @@
 import { http, createConfig } from 'wagmi'
 import { base, mainnet } from 'wagmi/chains'
 import { getDefaultConfig } from '@rainbow-me/rainbowkit'
+import { MAINNET_RPC_URL } from './constants'
 
 // UniPerk uses:
-// - Mainnet for ENS text records
+// - Mainnet for ENS text records (RPC con CORS para navegador)
 // - Base for smart contracts (UniPerkHook, AgentRegistry)
 
 export const config = getDefaultConfig({
@@ -12,7 +13,7 @@ export const config = getDefaultConfig({
   chains: [base, mainnet],
   transports: {
     [base.id]: http(),
-    [mainnet.id]: http(),
+    [mainnet.id]: http(MAINNET_RPC_URL),
   },
   ssr: true,
 })

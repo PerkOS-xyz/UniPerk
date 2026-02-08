@@ -44,6 +44,24 @@ export async function getSubdomainByAddress(env: Env, address: string): Promise<
   return row?.name ?? null
 }
 
+export interface ListedName {
+  name: string
+  owner: string
+}
+
+/** Lista pública de subdominios registrados (solo name + owner). */
+export async function listNames(env: Env, limit = 100, offset = 0): Promise<ListedName[]> {
+  const sql = getSql(env)
+  const capped = Math.min(Math.max(1, limit), 500)
+  const rows = await sql`
+    SELECT name, owner FROM names
+    ORDER BY created_at DESC
+    LIMIT ${capped} OFFSET ${Math.max(0, offset)}
+  `
+  const list = Array.isArray(rows) ? rows : [rows]
+  return list.map((r: Record<string, unknown>) => ({ name: String(r.name), owner: String(r.owner) }))
+}
+
 export async function createName(
   env: Env,
   name: string,

@@ -3,6 +3,7 @@ import type { Env } from './env.d'
 import { getCcipRead } from './handlers/ccip'
 import { register } from './handlers/register'
 import { getSubdomainByAddressHandler } from './handlers/subdomain'
+import { listSubdomainsHandler } from './handlers/subdomains-list'
 import { updatePermissions } from './handlers/permissions'
 
 const { preflight, corsify } = createCors({
@@ -17,6 +18,7 @@ router
   .get('/lookup/:sender/:data', (req, env: Env) => getCcipRead(req, env))
   .get('/lookup/:sender/:data.json', (req, env: Env) => getCcipRead(req, env))
   .get('/subdomain', (req, env: Env) => getSubdomainByAddressHandler(req, env))
+  .get('/subdomains', (req, env: Env) => listSubdomainsHandler(req, env))
   .post('/register', (req, env: Env) => register(req, env))
   .patch('/permissions', (req, env: Env) => updatePermissions(req, env))
   .put('/permissions', (req, env: Env) => updatePermissions(req, env))

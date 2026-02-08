@@ -1,10 +1,11 @@
 import { createPublicClient, http } from 'viem';
 import { mainnet } from 'viem/chains';
+import { MAINNET_RPC_URL } from '@/lib/constants';
 import type { ENSPermissions, ValidationResult } from './types';
 
 const mainnetClient = createPublicClient({
   chain: mainnet,
-  transport: http()
+  transport: http(MAINNET_RPC_URL),
 });
 
 interface ValidationRequest {
