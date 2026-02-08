@@ -5,7 +5,11 @@ import { register } from './handlers/register'
 import { getSubdomainByAddressHandler } from './handlers/subdomain'
 import { updatePermissions } from './handlers/permissions'
 
-const { preflight, corsify } = createCors()
+const { preflight, corsify } = createCors({
+  origins: ['*'],
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'OPTIONS'],
+  headers: { 'Access-Control-Allow-Headers': 'Content-Type' },
+})
 const router = Router()
 
 router
@@ -19,7 +23,13 @@ router
   .all('*', () => new Response('Not found', { status: 404 }))
 
 export default {
-  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    return router.handle(request, env).then(corsify)
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    try {
+      const response = await router.handle(request, env)
+      return response ? corsify(response) : corsify(new Response(JSON.stringify({ error: 'No handler' }), { status: 500, headers: { 'Content-Type': 'application/json' } }))
+    } catch (err) {
+      const body = JSON.stringify({ error: 'Internal Server Error', message: err instanceof Error ? err.message : String(err) })
+      return corsify(new Response(body, { status: 500, headers: { 'Content-Type': 'application/json' } }))
+    }
   },
 }
